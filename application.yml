@@ -1,15 +1,29 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/task_manager
+    url: jdbc:postgresql://localhost:5432/tax_compliance_engine
     username: rakesh
     password: 
     driver-class-name: org.postgresql.Driver
 
   jpa:
-    hibernate:
+    #hibernate:
       #ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true # Optional: Makes the logged SQL pretty and readable
+
+  cloud:
+    aws:
+      credentials:
+        access-key: test
+        secret-key: test
+      region:
+        static: us-east-1
+      sqs:
+        endpoint: http://localhost:4566
+
+app:
+  sqs:
+    compliance-queue: http://localhost.localstack.cloud:4566/queue/us-east-1/000000000000/test-queue

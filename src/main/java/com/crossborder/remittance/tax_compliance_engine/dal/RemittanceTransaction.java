@@ -16,17 +16,17 @@ public class RemittanceTransaction {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(name = "base_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal baseAmount;
+    @Column(name = "base_amount_inr", nullable = false, precision = 15, scale = 2)
+    private BigDecimal baseAmountInr;
 
-    @Column(name = "currency", nullable = false, length = 3)
-    private String currency;
+    @Column(name = "target_currency", nullable = false, length = 3)
+    private String targetCurrency;
 
     @Column(name = "purpose_code", nullable = false, length = 10)
     private String purposeCode;
 
-    @Column(name = "tcs_amount", precision = 15, scale = 2)
-    private BigDecimal tcsAmount = BigDecimal.ZERO;
+    @Column(name = "tcs_amount_inr", precision = 15, scale = 2)
+    private BigDecimal tcsAmountInr = BigDecimal.ZERO;
 
     @Column(name = "status", nullable = false, length = 50)
     private String status;
@@ -51,8 +51,8 @@ public class RemittanceTransaction {
         this.createdAt = now;
         this.updatedAt = now;
 
-        if (this.tcsAmount == null) {
-            this.tcsAmount = BigDecimal.ZERO;
+        if (this.tcsAmountInr == null) {
+            this.tcsAmountInr = BigDecimal.ZERO;
         }
     }
 
@@ -76,19 +76,19 @@ public class RemittanceTransaction {
     }
 
     public BigDecimal getBaseAmount() {
-        return baseAmount;
+        return baseAmountInr;
     }
 
-    public void setBaseAmount(BigDecimal baseAmount) {
-        this.baseAmount = baseAmount;
+    public void setBaseAmount(BigDecimal baseAmountInr) {
+        this.baseAmountInr = baseAmountInr;
     }
 
     public String getCurrency() {
-        return currency;
+        return targetCurrency;
     }
 
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    public void setCurrency(String targetCurrency) {
+        this.targetCurrency = targetCurrency;
     }
 
     public String getPurposeCode() {
@@ -100,11 +100,11 @@ public class RemittanceTransaction {
     }
 
     public BigDecimal getTcsAmount() {
-        return tcsAmount;
+        return tcsAmountInr;
     }
 
-    public void setTcsAmount(BigDecimal tcsAmount) {
-        this.tcsAmount = tcsAmount;
+    public void setTcsAmount(BigDecimal tcsAmountInr) {
+        this.tcsAmountInr = tcsAmountInr;
     }
 
     public String getStatus() {

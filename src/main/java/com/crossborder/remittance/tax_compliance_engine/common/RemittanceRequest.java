@@ -3,6 +3,8 @@ package com.crossborder.remittance.tax_compliance_engine.common;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import org.springframework.validation.annotation.Validated;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +16,7 @@ public class RemittanceRequest {
     private UUID userId;
 
     @NotNull(message = "Amount is required")
-    @DecimalMin(value = "100.00", message = "Minimum remittance amount is 100")
+    @DecimalMin(value = "500.00", message = "Minimum remittance amount is Rs.500")
     private BigDecimal amount;
 
     @NotBlank(message = "Currency code is required")

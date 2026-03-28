@@ -25,6 +25,7 @@ public class RemittanceController {
     @PostMapping
     public ResponseEntity<Map<String, String>> processRemittance(@Valid @RequestBody RemittanceRequest request) {
         
+    	//TODO : add min amount, currency codes and purpose code validations in seperate method
     	 Map<String, String> response = new HashMap<>();
     	 
         // Calls the biz layer
