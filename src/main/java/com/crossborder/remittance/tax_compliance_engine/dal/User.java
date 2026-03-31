@@ -33,10 +33,6 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
-
-    @Version
-    @Column(name = "version")
-    private Integer version;
     
     public User() {}
 
@@ -103,13 +99,5 @@ public class User {
 
 	public void setUpdatedAt(OffsetDateTime updatedAt) {
 		this.updatedAt = updatedAt;
-	}
-
-	public Integer getVersion() {
-		return version;
-	}
-
-	public void setVersion(Integer version) {
-		this.version = version;
 	}
 }

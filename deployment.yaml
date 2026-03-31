@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tax-compliance-backend
+  labels:
+    app: tax-compliance
+spec:
+  replicas: 2 # Runs two copies of your app for High Availability
+  selector:
+    matchLabels:
+      app: tax-compliance
+  template:
+    metadata:
+      labels:
+        app: tax-compliance
+    spec:
+      containers:
+      - name: tax-compliance-spring-app
+        image: 887351816143.dkr.ecr.us-east-1.amazonaws.com/tax-compliance-engine-repo:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        # --- TOPOLOGY (Safe to commit to GitHub) ---
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://tax-compliance-engine-db.ce9iqimoej9s.us-east-1.rds.amazonaws.com:5432/postgres"
+        - name: APP_SQS_COMPLIANCE_QUEUE
+          value: "ComplianceCheckQueue" # Update if you named your SQS queue differently
+        - name: AWS_REGION
+          value: "us-east-1"
+          
+        # --- SECRETS (Pulled dynamically from Kubernetes Vault) ---
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: rds-db-credentials
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rds-db-credentials
+              key: password

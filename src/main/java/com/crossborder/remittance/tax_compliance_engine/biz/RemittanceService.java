@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.crossborder.remittance.tax_compliance_engine.common.ComplianceCheckEvent;
 import com.crossborder.remittance.tax_compliance_engine.common.RemittanceRequest;
-import com.crossborder.remittance.tax_compliance_engine.common.TransactionStatus;
+import com.crossborder.remittance.tax_compliance_engine.common.RemitTransactionStatus;
 import com.crossborder.remittance.tax_compliance_engine.dal.RemittanceRepository;
 import com.crossborder.remittance.tax_compliance_engine.dal.RemittanceTransaction;
 import com.crossborder.remittance.tax_compliance_engine.dal.User;
@@ -47,7 +47,7 @@ public class RemittanceService {
         transaction.setBaseAmount(request.getAmount());
         transaction.setCurrency(request.getCurrency());
         transaction.setPurposeCode(request.getPurposeCode());
-        transaction.setStatus(TransactionStatus.PENDING_COMPLIANCE_CHECK.name());
+        transaction.setStatus(RemitTransactionStatus.PENDING_COMPLIANCE_CHECK.name());
         
         RemittanceTransaction savedTx = remittanceRepository.save(transaction);
         

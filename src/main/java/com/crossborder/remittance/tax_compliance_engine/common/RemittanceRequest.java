@@ -24,7 +24,7 @@ public class RemittanceRequest {
     private String currency;
 
     @NotBlank(message = "RBI Purpose Code is required")
-    @Pattern(regexp = "^(S0305|S0001|S1301)$", message = "Invalid RBI Purpose Code")
+    //@Pattern(regexp = "^(S0305|S0001|S1301)$", message = "Invalid RBI Purpose Code")
     private String purposeCode;
 
 	public UUID getUserId() {
