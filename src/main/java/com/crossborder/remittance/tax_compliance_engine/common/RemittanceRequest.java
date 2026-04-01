@@ -3,29 +3,12 @@ package com.crossborder.remittance.tax_compliance_engine.common;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import org.springframework.validation.annotation.Validated;
-
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-
 public class RemittanceRequest {
 
-    @NotNull(message = "User ID is required")
-    private UUID userId;
-
-    @NotNull(message = "Amount is required")
-    @DecimalMin(value = "500.00", message = "Minimum remittance amount is Rs.500")
-    private BigDecimal amount;
-
-    @NotBlank(message = "Currency code is required")
-    @Pattern(regexp = "^(USD|EUR|GBP|AUD)$", message = "Unsupported currency code")
-    private String currency;
-
-    @NotBlank(message = "RBI Purpose Code is required")
-    //@Pattern(regexp = "^(S0305|S0001|S1301)$", message = "Invalid RBI Purpose Code")
-    private String purposeCode;
+	private UUID userId;
+	private BigDecimal amount;
+	private String currency;
+	private String purposeCode;
 
 	public UUID getUserId() {
 		return userId;
@@ -58,6 +41,4 @@ public class RemittanceRequest {
 	public void setPurposeCode(String purposeCode) {
 		this.purposeCode = purposeCode;
 	}
-
-    
 }
