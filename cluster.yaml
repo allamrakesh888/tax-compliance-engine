@@ -1,0 +1,23 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: tax-compliance-cluster
+  region: us-east-1
+  version: "1.33" 
+
+managedNodeGroups:
+  - name: standard-workers
+    instanceType: t3.medium
+    minSize: 2
+    maxSize: 2
+    desiredCapacity: 2
+    
+    # nodes in Private Subnets
+    privateNetworking: true 
+    
+    # Optional - secure remote access
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        cloudWatch: true

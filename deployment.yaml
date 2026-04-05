@@ -22,7 +22,7 @@ spec:
         - containerPort: 8080
         env:
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://tax-compliance-engine-db.ce9iqimoej9s.us-east-1.rds.amazonaws.com:5432/postgres"
+          value: "jdbc:postgresql://tax-compliance-db.ce9iqimoej9s.us-east-1.rds.amazonaws.com:5432/postgres"
         - name: APP_SQS_COMPLIANCE_QUEUE
           value: "ComplianceCheckQueue"
         - name: AWS_REGION
