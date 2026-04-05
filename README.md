@@ -1,2 +1,3 @@
-# tax-compliance-engine
-A Distributed, Cloud-native Backend system for processing outward international money transfers, with real-time tracking of user-specific annual limits to enforce regulatory compliance and calculate applicable taxes such as Tax Collected at Source (TCS) beyond the ₹10 lakh threshold.
+**Title**: Cross-Border Remittance & Tax Compliance Engine
+**Summary**: A Distributed, Event-driven, Cloud-native, Microservices-based backend system built on AWS EKS to process international money transfers and asynchronously calculate tax compliance (TCS) using Spring Boot, Amazon RDS (PostgreSQL), Amazon SQS, and AWS Lambda. 
+The System processes outward international money transfers, with real-time tracking of user-specific annual limits to enforce regulatory compliance and calculate applicable taxes such as Tax Collected at Source (TCS) beyond the ₹10 lakh threshold based on LRS purpose codes (Liberalised Remittance Scheme)
