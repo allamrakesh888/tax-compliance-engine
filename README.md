@@ -1,11 +1,11 @@
-**1. Cross-Border Remittance & Tax Compliance Engine**   
+## 1. Cross-Border Remittance & Tax Compliance Engine     
    
 A Distributed, Event-driven, Cloud-native, Microservices-based backend system built on AWS EKS to process international money transfers and asynchronously calculate tax compliance (TCS) using Spring Boot, Amazon RDS (PostgreSQL), Amazon SQS, and AWS Lambda.  
    
 The System processes outward international money transfers, with real-time tracking of user-specific annual limits to enforce regulatory compliance and calculate applicable taxes such as Tax Collected at Source (TCS) beyond the ₹10 lakh threshold based on LRS purpose codes (Liberalised Remittance Scheme)
 <br><br>    
         
-**2. High-Level Architecture (HLD) & Traffic Flow**
+## 2. High-Level Architecture (HLD) & Traffic Flow  
 
 <img width="1800" height="1473" alt="AwsArchitectureDiagMT" src="https://github.com/user-attachments/assets/be387c01-c631-4aa8-a5a2-76b171c38b92" />
 
@@ -16,6 +16,10 @@ The architecture handles two primary traffic flows:
 **Flow 1: Asynchronous Remittance Initiation**  
 &emsp; This flow ensures that the API remains highly available and never drops a transaction, even if the tax calculation engine experiences downtime.
 
+<details open>     
+<summary>Click to collapse flow details</summary>        
+<br>   
+   
  > **1. Request Ingress:** The Client App initiates a POST request to the public Network Load Balancer (NLB).  
 
  > **2. Internal Routing:** The NLB routes the traffic to the Spring Boot Pods running on EKS worker nodes inside the isolated Private Subnet.  
@@ -27,10 +31,16 @@ The architecture handles two primary traffic flows:
  > **5.Tax Calculation:** The SQS event triggers the AWS Lambda function (also located in the Private Subnet).    
 
  > **6.Ledger Update:** The Lambda function calculates the Tax Collected at Source (TCS) and securely connects to the RDS instance to update the final ledger and mark the transaction as COMPLETED.  
+</details>
+<br>
 
 **Flow 2: Synchronous Status Polling**  
 &emsp;This flow allows clients to securely check the real-time status of their cross-border transfers.
 
+<details open>     
+<summary>Click to collapse flow details</summary>        
+<br>  
+   
 > **1. Status Query:** The Client App sends a GET request to the NLB with the specific Transaction ID.
 
 > **2. Internal Routing:** The NLB forwards the request to the Spring Boot API.
@@ -38,3 +48,73 @@ The architecture handles two primary traffic flows:
 > **3. Synchronous Read:** The API performs a secure read operation directly from the Amazon RDS instance.
 
 > **4. Response:** The API returns the exact status (PENDING, COMPLETED, or FAILED_TAX_COMPLIANCE) back to the client.
+</details>    
+<br>   
+
+## 3. Key Engineering Decisions
+<details open>     
+<summary>Click to collapse decisions</summary>        
+<br>   
+   
+> **1. Defense-in-Depth Networking:** All the heavy lifters (EKS nodes, Lambda, database) are hidden away in isolated Private Subnets. The only way in from the outside world is through a super-fast Network Load Balancer (NLB) acting as the front door.
+    
+> **2. Event-Driven Decoupling:** Used Amazon SQS to separate the fast Spring Boot API from the heavy tax calculation Lambda. Even if the tax engine crashes, the API stays up, saves the transaction as pending, and queues it safely.
+ 
+> **3. IAM Least Privilege:** Pushed the Lambda function directly into the custom VPC and locked down the database security groups. The database only accepts traffic from specific, pre-approved EKS nodes and the Lambda—nobody else gets a pass.
+
+</details>
+<br>  
+
+## 4. Tech Stack & Infrastructure
+
+> **Core Application:** Java 21, Spring Boot, Hibernate/JPA.
+
+> **Database:** Amazon RDS (PostgreSQL).
+
+> **Cloud Infrastructure:** AWS EKS (Kubernetes), Amazon SQS, AWS Lambda, VPC (NAT Gateways, Public/Private Subnets).
+
+> **Infrastructure as Code (IaC):** eksctl, standard Kubernetes manifests (deployment.yaml, service.yaml)
+<br>
+
+## 5. API Contracts (Payloads & Endpoints)
+The API is designed around RESTful principles, utilizing standard HTTP status codes to reflect the asynchronous nature of the remittance engine.  
+**1. Initiate Remittance**
+POST /api/v1/remittances
+
+Accepts a new cross-border transfer request. The system instantly persists the transaction to the PostgreSQL ledger and publishes an event to SQS for downstream tax processing.   
+
+Request Payload:
+```
+{
+    "userId":"9a63884b-3f79-4b04-ac4c-7b45b477d5ff",
+    "amount":"100000",
+    "currency":"USD",
+    "purposeCode":"S0305-EDUCATION_LOAN"
+}
+```
+
+
+Response Payload (202 Accepted):
+```
+{
+    "status": "ACCEPTED",
+    "transactionId": "e85a0bf7-4e3c-4afc-a1fc-06556fc2fca0",
+    "message": "Transaction state : PENDING_COMPLIANCE_CHECK"
+}
+```
+
+**2. Get Transaction Status**
+GET /api/v1/transaction/{transactionId}/status
+
+A synchronous endpoint used by the client application to poll the real-time status of their transfer after the AWS Lambda function processes the compliance rules.   
+
+Response Payload (200 OK):
+```
+{
+    "transactionId": "4feed174-af08-4e9b-96c2-e389cdf15189",
+    "status": "APPROVED"
+}
+```
+
+## 6. Local Setup & Execution
+TODO - continue from here
