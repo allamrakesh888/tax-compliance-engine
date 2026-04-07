@@ -51,6 +51,12 @@ The architecture handles two primary traffic flows:
 </details>    
 <br>   
 
+### 🔗 Related Repositories
+
+This project follows a decoupled microservice architecture. While this repository contains the core EKS Spring Boot API and infrastructure definitions, the tax calculation engine is maintained and deployed separately.
+
+* **[Tax Calculator Lambda ↗](https://github.com/allamrakesh888/tax-compliance-lambda)** - The serverless Java function that consumes SQS events and updates the PostgreSQL ledger.
+  
 ## 3. Key Engineering Decisions
 <details open>     
 <summary>Click to collapse decisions</summary>        
@@ -115,6 +121,7 @@ Response Payload (200 OK):
     "status": "APPROVED"
 }
 ```
+<br>
 
 ## 6. Local Setup & Execution
 As this project is built on AWS environment with strict networking rules, you cannot connect to the database directly over the public internet. Follow these steps to tunnel into the private subnet and run the application locally.   
@@ -154,4 +161,50 @@ Once the server starts on port 8080, you can hit the API locally.
 The Spring Boot application will successfully save the transaction to the remote AWS RDS instance (via your tunnel) and 
 push the event out to the AWS SQS queue.
 
-To safely shut down the local server and close the database tunnel, press <kbd>Ctrl</kbd> + <kbd>C</kbd> in your terminal windows.
+To safely shut down the local server and close the database tunnel, press <kbd>Ctrl</kbd> + <kbd>C</kbd> in your terminal windows.   
+<br>
+
+## 7. Cloud Infrastructure Deployment
+This project uses eksctl and the AWS CLI to provision the required cloud infrastructure. If you wish to replicate this environment in your own AWS account, follow these steps in order.  
+
+**1. Provision the EKS Cluster & Custom VPC**    
+We use eksctl to automatically generate the VPC, public/private subnets, NAT Gateways, and the worker node IAM roles.
+
+Create the cluster using the declarative config file
+```
+eksctl create cluster -f infrastructure/cluster.yaml
+```
+**2. Provision the Amazon SQS Queue**    
+Once the cluster is up, create the standard SQS queue that will act as the event bus between the Spring Boot API and the Lambda function.
+```
+aws sqs create-queue \
+    --queue-name ComplianceCheckQueue \
+    --region us-east-1
+```
+**3. Provision the Private PostgreSQL Database**     
+Because the database must reside in the private subnet created by eksctl in Step 1, it is provisioned via the AWS Console with the following strict parameters:
+
+- VPC: Select the newly created tax-compliance-cluster VPC.
+- Subnet Group: Assign to the Private Subnets.
+- Public Access: Set to No.
+- Security Group: Create an inbound rule allowing Port 5432 only from the EKS Node Security Group ID.
+
+**4. Deploy the Proxy Tunnel**    
+Deploy the lightweight socat proxy pod into the cluster. This creates the secure bridge into the private subnet for local pgAdminTool usage.  
+```
+kubectl apply -f infrastructure/pg-tunnel-deployment.yaml
+```
+**5. Deploy the Application**  
+Finally, apply the Kubernetes manifests to deploy the Spring Boot API and expose it via the Network Load Balancer.
+
+> Create the native Kubernetes secrets for DB credentials
+```
+kubectl create secret generic rds-credentials \
+  --from-literal=username='postgres_user' \
+  --from-literal=password='super_secret_password'
+```
+>  Deploy the application and the NLB service
+```
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
