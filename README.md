@@ -117,4 +117,41 @@ Response Payload (200 OK):
 ```
 
 ## 6. Local Setup & Execution
-TODO - continue from here
+As this project is built on AWS environment with strict networking rules, you cannot connect to the database directly over the public internet. Follow these steps to tunnel into the private subnet and run the application locally.   
+<br>
+**Prerequisites**      
+Ensure you have the following installed on your local machine:     
+
+  - Java 21 & Maven 3.8+
+  - AWS CLI (configured with your IAM user credentials)
+  - kubectl (configured to communicate with your EKS cluster)  
+
+<details>
+<summary><b>Click to expand: Environment Variables (.env)</b></summary>
+
+Create an <code>application-local.properties</code> or configure your IDE environment variables with the following:  
+
+AWS_REGION=us-east-1  
+SQS_QUEUE_NAME=ComplianceCheckQueue  
+
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/remittance_db    
+SPRING_DATASOURCE_USERNAME=your_master_username    
+SPRING_DATASOURCE_PASSWORD=your_super_secret_password    
+</details>    
+
+**Step 1: Establish the Database Tunnel (Proxy Pod)**  
+To connect to the Amazon RDS instance hidden inside the Private Subnet, we use a lightweight proxy pod deployed in the EKS cluster to securely port-forward traffic.   
+- kubectl run pg-tunnel --image=alpine/socat --port=5432 -- tcp-listen:5432,fork,reuseaddr tcp-connect:{AwsRdsHost}:5432
+- kubectl port-forward pod/pg-tunnel 5432:5432
+
+**Step 2: Run the Spring Boot Application**   
+With the tunnel open, open a second terminal window and start the application:  
+
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+
+**Step 3: Test the Flow**   
+Once the server starts on port 8080, you can hit the API locally.    
+The Spring Boot application will successfully save the transaction to the remote AWS RDS instance (via your tunnel) and 
+push the event out to the AWS SQS queue.
+
+To safely shut down the local server and close the database tunnel, press <kbd>Ctrl</kbd> + <kbd>C</kbd> in your terminal windows.
