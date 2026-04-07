@@ -48,8 +48,7 @@ The architecture handles two primary traffic flows:
 > **3. Synchronous Read:** The API performs a secure read operation directly from the Amazon RDS instance.
 
 > **4. Response:** The API returns the exact status (PENDING, COMPLETED, or FAILED_TAX_COMPLIANCE) back to the client.
-</details>    
-<br>   
+</details>      
 
 ### 🔗 Related Repositories
 
@@ -57,6 +56,8 @@ This project follows a decoupled microservice architecture. While this repositor
 
 * **[Tax Calculator Lambda ↗](https://github.com/allamrakesh888/tax-compliance-lambda)** - The serverless Java function that consumes SQS events and updates the PostgreSQL ledger.
   
+<br> 
+
 ## 3. Key Engineering Decisions
 <details open>     
 <summary>Click to collapse decisions</summary>        
@@ -161,7 +162,8 @@ Once the server starts on port 8080, you can hit the API locally.
 The Spring Boot application will successfully save the transaction to the remote AWS RDS instance (via your tunnel) and 
 push the event out to the AWS SQS queue.
 
-To safely shut down the local server and close the database tunnel, press <kbd>Ctrl</kbd> + <kbd>C</kbd> in your terminal windows.   
+To safely shut down the local server and close the database tunnel, press <kbd>Ctrl</kbd> + <kbd>C</kbd> in your terminal windows. 
+     
 <br>
 
 ## 7. Cloud Infrastructure Deployment
