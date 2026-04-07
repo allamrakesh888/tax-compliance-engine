@@ -1,20 +1,22 @@
 ## 1. Cross-Border Remittance & Tax Compliance Engine     
    
-A Distributed, Event-driven, Cloud-native, Microservices-based backend system built on AWS EKS to process international money transfers and asynchronously calculate tax compliance (TCS) using Spring Boot, Amazon RDS (PostgreSQL), Amazon SQS, and AWS Lambda.  
+- A Distributed, Event-driven, Cloud-native, Microservices-based backend system built on AWS EKS to process international money transfers and asynchronously calculate tax compliance (TCS) using Spring Boot, Amazon RDS (PostgreSQL), Amazon SQS, and AWS Lambda.  
    
-The System processes outward international money transfers, with real-time tracking of user-specific annual limits to enforce regulatory compliance and calculate applicable taxes such as Tax Collected at Source (TCS) beyond the ₹10 lakh threshold based on LRS purpose codes (Liberalised Remittance Scheme)
+- The System processes outward international money transfers, with real-time tracking of user-specific annual limits to enforce regulatory compliance and calculate applicable taxes such as Tax Collected at Source (TCS) beyond the ₹10 lakh threshold based on LRS purpose codes (Liberalised Remittance Scheme)
 <br><br>    
         
 ## 2. High-Level Architecture (HLD) & Traffic Flow  
 
-<img width="1800" height="1473" alt="AwsArchitectureDiagMT" src="https://github.com/user-attachments/assets/be387c01-c631-4aa8-a5a2-76b171c38b92" />
-
-This system implements a strict Defense-in-Depth network topology. All compute resources and databases are completely isolated within Private Subnets, while a public Network Load Balancer (NLB) acts as the single point of ingress.   
+<img width="1800" height="1473" alt="AwsArchitectureDiagMT" src="https://github.com/user-attachments/assets/be387c01-c631-4aa8-a5a2-76b171c38b92" />   
+    
+<br>    
+       
+This system implements a strict Multi Layered Protection network topology. All compute resources and databases are completely isolated within Private Subnets, while a public Network Load Balancer (NLB) acts as the single point of ingress.   
 
 The architecture handles two primary traffic flows:   
 
 **Flow 1: Asynchronous Remittance Initiation**  
-&emsp; This flow ensures that the API remains highly available and never drops a transaction, even if the tax calculation engine experiences downtime.
+&emsp; This flow ensures that the API remains highly available and never drops a transaction, even if the tax calculation engine(lambda) experiences downtime.
 
 <details open>     
 <summary>Click to collapse flow details</summary>        
@@ -24,18 +26,18 @@ The architecture handles two primary traffic flows:
 
  > **2. Internal Routing:** The NLB routes the traffic to the Spring Boot Pods running on EKS worker nodes inside the isolated Private Subnet.  
 
- > **3.State Persistence:** The Spring Boot API immediately saves the transaction in the Amazon RDS PostgreSQL database with a status of PENDING.  
+ > **3.State Persistence:** The Spring Boot API immediately saves the transaction in the Amazon RDS PostgreSQL database with a status of PENDING_COMPLIANCE_CHECK.  
 
  > **4.Event Publishing:** The API pushes a transaction event out through the NAT Gateway to the Amazon SQS Main Queue.  
 
  > **5.Tax Calculation:** The SQS event triggers the AWS Lambda function (also located in the Private Subnet).    
 
- > **6.Ledger Update:** The Lambda function calculates the Tax Collected at Source (TCS) and securely connects to the RDS instance to update the final ledger and mark the transaction as COMPLETED.  
+ > **6.Ledger Update:** The Lambda function calculates the Tax Collected at Source (TCS) and securely connects to the RDS instance to update the final ledger and mark the transaction as APPROVED.  
 </details>
 <br>
 
 **Flow 2: Synchronous Status Polling**  
-&emsp;This flow allows clients to securely check the real-time status of their cross-border transfers.
+&emsp;This flow allows clients to check the real-time status of their cross-border transfers.
 
 <details open>     
 <summary>Click to collapse flow details</summary>        
@@ -47,14 +49,14 @@ The architecture handles two primary traffic flows:
 
 > **3. Synchronous Read:** The API performs a secure read operation directly from the Amazon RDS instance.
 
-> **4. Response:** The API returns the exact status (PENDING, COMPLETED, or FAILED_TAX_COMPLIANCE) back to the client.
+> **4. Response:** The API returns the exact status (PENDING_COMPLIANCE_CHECK, APPROVED or REJECTED(with Rejection Reason)) back to the client.
 </details>      
 
 ### 🔗 Related Repositories
 
-This project follows a decoupled microservice architecture. While this repository contains the core EKS Spring Boot API and infrastructure definitions, the tax calculation engine is maintained and deployed separately.
+This project follows a decoupled Microservice architecture. While this repository contains the core EKS Spring Boot API and infrastructure definitions, the tax calculation engine is maintained and deployed separately.
 
-* **[Tax Calculator Lambda ↗](https://github.com/allamrakesh888/tax-compliance-lambda)** - The serverless Java function that consumes SQS events and updates the PostgreSQL ledger.
+* **[Tax Calculator Lambda Repo↗](https://github.com/allamrakesh888/tax-compliance-lambda)** - The serverless Java function that consumes SQS events and updates the PostgreSQL ledger and Remittance Transaction.
   
 <br> 
 
@@ -63,7 +65,7 @@ This project follows a decoupled microservice architecture. While this repositor
 <summary>Click to collapse decisions</summary>        
 <br>   
    
-> **1. Defense-in-Depth Networking:** All the heavy lifters (EKS nodes, Lambda, database) are hidden away in isolated Private Subnets. The only way in from the outside world is through a super-fast Network Load Balancer (NLB) acting as the front door.
+> **1. Multi Layered Protection Networking:** All the heavy lifters (EKS nodes, Lambda, database) are hidden away in isolated Private Subnets. The only way in from the outside world is through a super-fast Network Load Balancer (NLB) acting as the front door.
     
 > **2. Event-Driven Decoupling:** Used Amazon SQS to separate the fast Spring Boot API from the heavy tax calculation Lambda. Even if the tax engine crashes, the API stays up, saves the transaction as pending, and queues it safely.
  
@@ -74,7 +76,7 @@ This project follows a decoupled microservice architecture. While this repositor
 
 ## 4. Tech Stack & Infrastructure
 
-> **Core Application:** Java 21, Spring Boot, Hibernate/JPA.
+> **Core Application:** Java 21, Spring Boot, Spring Data JPA (Hibernate/JPA).
 
 > **Database:** Amazon RDS (PostgreSQL).
 
@@ -88,7 +90,7 @@ The API is designed around RESTful principles, utilizing standard HTTP status co
 **1. Initiate Remittance**
 POST /api/v1/remittances
 
-Accepts a new cross-border transfer request. The system instantly persists the transaction to the PostgreSQL ledger and publishes an event to SQS for downstream tax processing.   
+Accepts a new cross-border transfer request. The system instantly persists the transaction to the PostgreSQL remittance table and publishes an event to SQS for downstream tax processing.   
 
 Request Payload:
 ```
