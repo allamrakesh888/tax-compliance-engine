@@ -60,7 +60,12 @@ This project follows a decoupled Microservice architecture. While this repositor
   
 <br> 
 
-## 3. Key Engineering Decisions
+ ## 3. End-to-End Execution flow
+[Click here to watch the E2E project demo](https://youtu.be/bDWPFlSpqG8) [youtube video link]
+
+<br>
+
+## 4. Key Engineering Decisions
 <details open>     
 <summary>Click to collapse decisions</summary>        
 <br>   
@@ -74,7 +79,7 @@ This project follows a decoupled Microservice architecture. While this repositor
 </details>
 <br>  
 
-## 4. Tech Stack & Infrastructure
+## 5. Tech Stack & Infrastructure
 
 > **Core Application:** Java 21, Spring Boot, Spring Data JPA (Hibernate/JPA).
 
@@ -85,7 +90,7 @@ This project follows a decoupled Microservice architecture. While this repositor
 > **Infrastructure as Code (IaC):** eksctl, standard Kubernetes manifests (deployment.yaml, service.yaml)
 <br>
 
-## 5. API Contracts (Payloads & Endpoints)
+## 6. API Contracts (Payloads & Endpoints)
 The API is designed around RESTful principles, utilizing standard HTTP status codes to reflect the asynchronous nature of the remittance engine.  
 **1. Initiate Remittance**
 POST /api/v1/remittances
@@ -126,7 +131,7 @@ Response Payload (200 OK):
 ```
 <br>
 
-## 6. Local Setup & Execution
+## 7. Local Setup & Execution
 As this project is built on AWS environment with strict networking rules, you cannot connect to the database directly over the public internet. Follow these steps to tunnel into the private subnet and run the application locally.   
 <br>
 **Prerequisites**      
@@ -168,7 +173,7 @@ To safely shut down the local server and close the database tunnel, press <kbd>C
      
 <br>
 
-## 7. Cloud Infrastructure Deployment
+## 8. Cloud Infrastructure Deployment
 This project uses eksctl and the AWS CLI to provision the required cloud infrastructure. If you wish to replicate this environment in your own AWS account, follow these steps in order.  
 
 **1. Provision the EKS Cluster & Custom VPC**    
