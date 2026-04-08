@@ -162,7 +162,7 @@ To connect to the Amazon RDS instance hidden inside the Private Subnet, we use a
 **Step 2: Run the Spring Boot Application**   
 With the tunnel open, open a second terminal window and start the application:  
 
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 
 **Step 3: Test the Flow**   
 Once the server starts on port 8080, you can hit the API locally.    
