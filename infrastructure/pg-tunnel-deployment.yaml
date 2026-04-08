@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-tunnel
+  labels:
+    app: pg-tunnel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg-tunnel
+  template:
+    metadata:
+      labels:
+        app: pg-tunnel
+    spec:
+      containers:
+      - name: socat-proxy
+        image: alpine/socat:latest
+        command: 
+          - "socat"
+          - "TCP4-LISTEN:5432,fork,reuseaddr"
+          - "TCP4:<YOUR_RDS_ENDPOINT_HERE>:5432"
+        ports:
+        - containerPort: 5432
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "32Mi"
+          limits:
+            cpu: "50m"
+            memory: "64Mi"
